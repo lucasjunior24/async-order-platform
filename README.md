@@ -373,6 +373,12 @@ uv run pytest tests/unit/test_order.py::test_order_total
 
 # 3. REFACTOR — limpe sem quebrar o comportamento
 uv run pytest tests/unit/
+
+run testes
+cd services/order-service
+.venv/Scripts/python.exe -m pytest tests/unit --cov=app/domain
+
+
 ```
 
 ### Comandos de qualidade
