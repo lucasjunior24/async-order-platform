@@ -237,6 +237,7 @@ Toda a plataforma é construída usando **TDD** — a especificação comportame
 | Categoria | Tecnologia | Versão |
 |-----------|------------|--------|
 | Linguagem | Python | 3.12+ |
+| Ambiente e dependências | uv | — |
 | Framework web | FastAPI | 0.115+ |
 | Validação de dados | Pydantic | 2.x |
 | ORM | SQLAlchemy (async) | 2.x |
@@ -314,8 +315,7 @@ api ──────► application ◄────── consumers
 ### Pré-requisitos
 
 - Docker & Docker Compose
-- Python 3.12+
-- [uv](https://github.com/astral-sh/uv) (recomendado) ou `pip`
+- [uv](https://docs.astral.sh/uv/) — gerencia o Python 3.12+ e as dependências do projeto
 
 ### 1. Inicialize a infraestrutura
 
@@ -330,16 +330,18 @@ cd services/order-service
 uv sync --all-extras
 ```
 
+O `uv sync` resolve o Python 3.12+, cria o ambiente virtual (`services/order-service/.venv`) e instala as dependências a partir do `pyproject.toml`, travando as versões no `uv.lock`. O flag `--all-extras` instala também as dependências de desenvolvimento.
+
 ### 3. Execute as migrações
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 ```
 
 ### 4. Execute o serviço
 
 ```bash
-uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload
 ```
 
 ### 5. Crie um pedido
@@ -364,25 +366,26 @@ O projeto segue um fluxo de trabalho **test-first** estrito:
 
 ```bash
 # 1. RED — escreva um teste que falha
-pytest tests/unit/test_order.py::test_order_total
+uv run pytest tests/unit/test_order.py::test_order_total
 
 # 2. GREEN — implemente o mínimo para passar
-pytest tests/unit/test_order.py::test_order_total
+uv run pytest tests/unit/test_order.py::test_order_total
 
 # 3. REFACTOR — limpe sem quebrar o comportamento
-pytest tests/unit/
+uv run pytest tests/unit/
 ```
 
 ### Comandos de qualidade
 
 ```bash
-make check       # ruff + mypy + pytest (barreira completa)
-make lint        # ruff check .
-make format      # ruff format .
-make typecheck   # mypy .
-make test        # pytest
-make coverage    # pytest --cov
+uv run ruff check .    # lint
+uv run ruff format .   # formatação
+uv run mypy .          # verificação de tipos
+uv run pytest          # testes
+uv run pytest --cov    # cobertura
 ```
+
+> O target `make check` orquestra a barreira completa (Ruff + mypy + Pytest), executando as mesmas ferramentas acima via `uv run`.
 
 ---
 

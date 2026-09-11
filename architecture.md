@@ -48,6 +48,7 @@ Backend de e-commerce orientado a eventos, com microsserviços isolados por dom�
 | Camada | Tecnologia | Versão | Justificativa |
 |--------|------------|--------|---------------|
 | Linguagem | Python | 3.12+ | Suporte moderno a typing (`X | Y`, `TypeAlias`, `Generic`) |
+| Ambiente e dependências | uv | — | Gerenciamento de Python, ambiente virtual e lockfile (`uv.lock`) |
 | API | FastAPI | 0.115+ | Async nativo, pydantic, OpenAPI automático |
 | Validação | Pydantic | 2.x | Models tipados, serialização, eventos |
 | ORM | SQLAlchemy | 2.x | Tipado com `Mapped[]`, `mapped_column` |
@@ -321,17 +322,22 @@ known-first-party = ["app", "shared"]
 
 ```bash
 # lint
-ruff check .
+uv run ruff check .
 
 # formatação
-ruff format .
+uv run ruff format .
 
 # type checking
-mypy .
+uv run mypy .
+
+# testes
+uv run pytest
 
 # formatação + lint + tipos (tudo)
 make check
 ```
+
+As ferramentas são executadas dentro do ambiente gerenciado pelo uv via `uv run`, garantindo que a versão correta do Python e das dependências (travadas no `uv.lock`) seja usada.
 
 ### 6.4 Pre-commit
 
@@ -497,6 +503,29 @@ dev = [
     "mypy>=1.10.0",
 ]
 ```
+
+### 8.1 Gerenciamento de ambiente e lockfile (uv)
+
+O `pyproject.toml` é a fonte única de verdade para as dependências; o uv o utiliza diretamente, sem necessidade de `requirements.txt` separado ou `setup.py`.
+
+```bash
+# instala/atualiza o ambiente virtual e as dependências a partir do pyproject.toml
+uv sync --all-extras
+
+# trava as versões resolvidas em uv.lock (versionar no repositório para builds reproduzíveis)
+uv lock
+
+# executa qualquer comando dentro do ambiente virtual (ex.: migrações, testes, linter)
+uv run alembic upgrade head
+uv run pytest
+uv run ruff check .
+```
+
+Regras:
+
+- O `uv.lock` é **versionado** no repositório para garantir builds reproduzíveis em CI/produção.
+- O ambiente virtual é local ao serviço (ex.: `services/order-service/.venv`) e fica ignorado no `.gitignore`.
+- Toda execução de ferramentas do projeto (`pytest`, `ruff`, `mypy`, `alembic`, `uvicorn`) é feita via `uv run`, nunca ativando manualmente o venv.
 
 ---
 

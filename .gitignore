@@ -1,1 +1,25 @@
 .rules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python / uv
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Tooling
+.cache/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

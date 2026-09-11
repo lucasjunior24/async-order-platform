@@ -1,0 +1,98 @@
+name: async-order-platform
+
+services:
+  postgres-orders:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_ORDERS_DB:-orders_db}
+      POSTGRES_USER: ${POSTGRES_ORDERS_USER:-orders}
+      POSTGRES_PASSWORD: ${POSTGRES_ORDERS_PASSWORD:-orders}
+    ports:
+      - "${POSTGRES_ORDERS_PORT:-5432}:5432"
+    volumes:
+      - orders_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_ORDERS_USER:-orders} -d ${POSTGRES_ORDERS_DB:-orders_db}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-payments:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_PAYMENTS_DB:-payments_db}
+      POSTGRES_USER: ${POSTGRES_PAYMENTS_USER:-payments}
+      POSTGRES_PASSWORD: ${POSTGRES_PAYMENTS_PASSWORD:-payments}
+    ports:
+      - "${POSTGRES_PAYMENTS_PORT:-5433}:5432"
+    volumes:
+      - payments_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_PAYMENTS_USER:-payments} -d ${POSTGRES_PAYMENTS_DB:-payments_db}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-inventory:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_INVENTORY_DB:-inventory_db}
+      POSTGRES_USER: ${POSTGRES_INVENTORY_USER:-inventory}
+      POSTGRES_PASSWORD: ${POSTGRES_INVENTORY_PASSWORD:-inventory}
+    ports:
+      - "${POSTGRES_INVENTORY_PORT:-5434}:5432"
+    volumes:
+      - inventory_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_INVENTORY_USER:-inventory} -d ${POSTGRES_INVENTORY_DB:-inventory_db}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  orders_pgdata:
+  payments_pgdata:
+  inventory_pgdata:
+  rabbitmq_data:
+  redis_data:
