@@ -1,5 +1,7 @@
 """Testes unitários da política de retry (T4.2)."""
 
+from contextlib import suppress
+
 from app.application.retry import exponential_backoff, pay_with_retry
 from app.domain import NonRetryablePaymentError, TransientPaymentError
 
@@ -46,15 +48,13 @@ async def test_does_not_retry_business_error() -> None:
         raise NonRetryablePaymentError("insufficient_funds")
 
     sleep = _RecordingSleep()
-    try:
+    with suppress(NonRetryablePaymentError):
         await pay_with_retry(
             operation,
             max_attempts=5,
             backoff=exponential_backoff(),
             sleep=sleep,
         )
-    except NonRetryablePaymentError:
-        pass
 
     assert calls == 1
     assert sleep.delays == []
@@ -69,14 +69,12 @@ async def test_gives_up_after_max_attempts() -> None:
         raise TransientPaymentError("sempre falha")
 
     sleep = _RecordingSleep()
-    try:
+    with suppress(TransientPaymentError):
         await pay_with_retry(
             operation,
             max_attempts=3,
             backoff=exponential_backoff(base=1),
             sleep=sleep,
         )
-    except TransientPaymentError:
-        pass
 
     assert calls == 3

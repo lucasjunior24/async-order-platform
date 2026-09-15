@@ -5,11 +5,8 @@ nunca erros de negócio.
 """
 
 from collections.abc import Awaitable, Callable
-from typing import TypeVar
 
 from app.domain import NonRetryablePaymentError, TransientPaymentError
-
-T = TypeVar("T")
 
 Backoff = Callable[[int], float]
 Sleep = Callable[[float], Awaitable[None]]
@@ -24,7 +21,7 @@ def exponential_backoff(base: float = 2.0) -> Backoff:
     return delay
 
 
-async def pay_with_retry(
+async def pay_with_retry[T](
     operation: Callable[[], Awaitable[T]],
     *,
     max_attempts: int,
@@ -43,7 +40,7 @@ async def pay_with_retry(
             return await operation()
         except NonRetryablePaymentError:
             raise
-        except TransientPaymentError as exc:
+        except TransientPaymentError:
             if attempt >= max_attempts:
                 raise
             await sleep(backoff(attempt))

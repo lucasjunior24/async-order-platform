@@ -1,5 +1,7 @@
 """Testes unitários do circuit breaker (T4.3)."""
 
+from contextlib import suppress
+
 from app.application.circuit_breaker import (
     CircuitBreaker,
     CircuitOpenError,
@@ -32,17 +34,13 @@ async def test_circuit_opens_after_failures() -> None:
         raise TransientPaymentError("falha")
 
     for _ in range(5):
-        try:
+        with suppress(TransientPaymentError):
             await breaker.call(operation)
-        except TransientPaymentError:
-            pass
 
     assert breaker.state is CircuitState.OPEN
 
-    try:
+    with suppress(CircuitOpenError):
         await breaker.call(operation)
-    except CircuitOpenError:
-        pass
 
     # a 6ª chamada não deve invocar a operação (falha rápido)
     assert calls == 5
@@ -52,10 +50,8 @@ async def test_circuit_recovers_after_timeout() -> None:
     clock = _FakeClock()
     breaker = CircuitBreaker(failure_threshold=1, recovery_timeout=30, clock=clock)
 
-    try:
+    with suppress(TransientPaymentError):
         await breaker.call(_fail)
-    except TransientPaymentError:
-        pass
 
     assert breaker.state is CircuitState.OPEN
 
@@ -81,10 +77,8 @@ async def test_success_resets_failure_count() -> None:
             raise TransientPaymentError("falha")
         return "OK"
 
-    try:
+    with suppress(TransientPaymentError):
         await breaker.call(fail_then_succeed)
-    except TransientPaymentError:
-        pass
 
     await breaker.call(fail_then_succeed)
     await breaker.call(fail_then_succeed)
