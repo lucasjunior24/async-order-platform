@@ -93,9 +93,7 @@ class ProcessPayment:
             sleep=self._sleep,
         )
 
-    async def _approve(
-        self, event: OrderCreated, payment_id: PaymentId
-    ) -> PaymentApproved:
+    async def _approve(self, event: OrderCreated, payment_id: PaymentId) -> PaymentApproved:
         payment = Payment(
             id=payment_id,
             order_id=event.order_id,
