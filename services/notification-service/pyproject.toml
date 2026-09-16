@@ -28,6 +28,7 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+pythonpath = [".", "../.."]
 testpaths = ["tests"]
 addopts = ["--strict-markers", "--strict-config", "--disable-warnings", "-ra"]
 markers = [
