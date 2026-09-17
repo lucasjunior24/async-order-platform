@@ -74,7 +74,7 @@ class Order(BaseModel):
 
     @property
     def total(self) -> Decimal:
-        """Soma (preço unitário × quantidade) de todos os itens."""
+        """Soma (preço unitário x quantidade) de todos os itens."""
         return sum(
             (item.unit_price * item.quantity for item in self.items),
             start=Decimal("0"),

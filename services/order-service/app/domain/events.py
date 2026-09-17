@@ -19,6 +19,7 @@ class OrderEvent(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     event_id: UUID = Field(default_factory=uuid4)
+    event_type: str
     order_id: OrderId
     trace_id: str
     occurred_at: datetime = Field(

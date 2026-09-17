@@ -6,6 +6,7 @@ isolada, conforme a pirâmide de testes.
 """
 
 from collections.abc import Sequence
+from uuid import UUID
 
 from app.domain import Order, OrderCreated, OrderEvent, OrderId
 
@@ -66,6 +67,10 @@ class InMemoryOrderRepository:
     async def get(self, order_id: OrderId) -> Order | None:
         return self._orders.get(order_id)
 
+    async def update(self, order: Order) -> None:
+        self._orders[order.id] = order
+        self._dirty = True
+
     def _checkpoint(self) -> None:
         if self._dirty:
             self._committed = dict(self._orders)
@@ -78,6 +83,48 @@ class InMemoryOrderRepository:
     def count(self) -> int:
         """Quantidade de pedidos persistidos (útil nos asserts)."""
         return len(self._orders)
+
+
+class InMemoryProcessedEvents:
+    """Tabela `processed_events` em memória, com idempotência."""
+
+    def __init__(self) -> None:
+        self._processed: set[UUID] = set()
+
+    async def mark_processed(self, event_id: UUID) -> bool:
+        """Marca `event_id` como processado; retorna False se já existia."""
+        if event_id in self._processed:
+            return False
+        self._processed.add(event_id)
+        return True
+
+    def count(self) -> int:
+        return len(self._processed)
+
+
+class InMemoryDeadLetterRepository:
+    """Repositório de dead letters em memória, para testes dos endpoints admin."""
+
+    def __init__(self) -> None:
+        self._messages: list[OrderEvent] = []
+
+    async def list(self) -> Sequence[OrderEvent]:
+        return list(self._messages)
+
+    async def get(self, message_id: UUID) -> OrderEvent | None:
+        for message in self._messages:
+            if message.event_id == message_id:
+                return message
+        return None
+
+    async def remove(self, message_id: UUID) -> None:
+        self._messages = [m for m in self._messages if m.event_id != message_id]
+
+    def add(self, event: OrderEvent) -> None:
+        self._messages.append(event)
+
+    def count(self) -> int:
+        return len(self._messages)
 
 
 class InMemoryUnitOfWork:
