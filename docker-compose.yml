@@ -90,6 +90,96 @@ services:
       timeout: 5s
       retries: 10
 
+  order-service:
+    build:
+      context: ./services/order-service
+    ports:
+      - "${ORDER_SERVICE_PORT:-8000}:8000"
+    depends_on:
+      postgres-orders:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+    ports:
+      - "${PAYMENT_SERVICE_PORT:-8001}:8000"
+    depends_on:
+      postgres-payments:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+    ports:
+      - "${INVENTORY_SERVICE_PORT:-8002}:8000"
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-8003}:8000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   prometheus:
     image: prom/prometheus:v2.53.0
     ports:

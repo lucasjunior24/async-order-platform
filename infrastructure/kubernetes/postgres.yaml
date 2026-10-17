@@ -1,0 +1,140 @@
+# PostgreSQL — um banco por serviço (bounded context).
+# Em produção, troque emptyDir por PersistentVolumeClaim.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-orders
+  namespace: async-order-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-orders
+  template:
+    metadata:
+      labels:
+        app: postgres-orders
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: orders_db
+            - name: POSTGRES_USER
+              value: orders
+            - name: POSTGRES_PASSWORD
+              value: orders
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-orders
+  namespace: async-order-platform
+spec:
+  selector:
+    app: postgres-orders
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-payments
+  namespace: async-order-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-payments
+  template:
+    metadata:
+      labels:
+        app: postgres-payments
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: payments_db
+            - name: POSTGRES_USER
+              value: payments
+            - name: POSTGRES_PASSWORD
+              value: payments
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-payments
+  namespace: async-order-platform
+spec:
+  selector:
+    app: postgres-payments
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-inventory
+  namespace: async-order-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-inventory
+  template:
+    metadata:
+      labels:
+        app: postgres-inventory
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: inventory_db
+            - name: POSTGRES_USER
+              value: inventory
+            - name: POSTGRES_PASSWORD
+              value: inventory
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-inventory
+  namespace: async-order-platform
+spec:
+  selector:
+    app: postgres-inventory
+  ports:
+    - port: 5432
+      targetPort: 5432

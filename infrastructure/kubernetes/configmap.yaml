@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: async-order-platform
+data:
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+  REDIS_URL: "redis://redis:6379/0"
+
+  # PostgreSQL — um banco por serviço (bounded context).
+  ORDERS_DATABASE_URL: "postgresql+asyncpg://orders:orders@postgres-orders:5432/orders_db"
+  PAYMENTS_DATABASE_URL: "postgresql+asyncpg://payments:payments@postgres-payments:5432/payments_db"
+  INVENTORY_DATABASE_URL: "postgresql+asyncpg://inventory:inventory@postgres-inventory:5432/inventory_db"
+
+  # Observabilidade
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
