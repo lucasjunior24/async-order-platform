@@ -67,9 +67,7 @@ async def test_reserve_stock_all_items_or_nothing() -> None:
     repository.add(StockLevel(product_id=20, available=0))
 
     result = await service.process(
-        _event(
-            OrderItem(product_id=10, quantity=2), OrderItem(product_id=20, quantity=1)
-        ),
+        _event(OrderItem(product_id=10, quantity=2), OrderItem(product_id=20, quantity=1)),
     )
 
     # o primeiro item não deve ser reservado se o segundo está sem estoque

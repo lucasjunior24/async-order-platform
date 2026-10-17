@@ -26,11 +26,7 @@ from app.infrastructure.in_memory import (
 def _order(status: OrderStatus = OrderStatus.PENDING) -> Order:
     return Order(
         customer_id=123,
-        items=(
-            OrderItem(
-                product_id=ProductId(10), quantity=1, unit_price=Decimal("10.00")
-            ),
-        ),
+        items=(OrderItem(product_id=ProductId(10), quantity=1, unit_price=Decimal("10.00")),),
         status=status,
     )
 
@@ -48,9 +44,7 @@ async def test_confirm_order_after_payment_then_inventory() -> None:
 
     confirm = ConfirmOrder(orders, processed)
 
-    await confirm.process(
-        PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="t")
-    )
+    await confirm.process(PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="t"))
     await confirm.process(InventoryReserved(order_id=order.id, trace_id="t"))
 
     updated = await orders.get(order.id)
@@ -66,9 +60,7 @@ async def test_confirm_order_after_inventory_then_payment() -> None:
     confirm = ConfirmOrder(orders, processed)
 
     await confirm.process(InventoryReserved(order_id=order.id, trace_id="t"))
-    await confirm.process(
-        PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="t")
-    )
+    await confirm.process(PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="t"))
 
     updated = await orders.get(order.id)
     assert updated is not None

@@ -47,9 +47,7 @@ def _order(status: OrderStatus = OrderStatus.PENDING) -> Order:
 def test_order_confirmed_after_payment_then_inventory() -> None:
     order = _order()
 
-    order = order.apply(
-        PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="trace-1")
-    )
+    order = order.apply(PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="trace-1"))
     assert order.status is OrderStatus.PAYMENT_APPROVED
 
     order = order.apply(InventoryReserved(order_id=order.id, trace_id="trace-1"))
@@ -62,9 +60,7 @@ def test_order_confirmed_after_inventory_then_payment() -> None:
     order = order.apply(InventoryReserved(order_id=order.id, trace_id="trace-1"))
     assert order.status is OrderStatus.INVENTORY_RESERVED
 
-    order = order.apply(
-        PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="trace-1")
-    )
+    order = order.apply(PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="trace-1"))
     assert order.status is OrderStatus.CONFIRMED
 
 
@@ -95,9 +91,7 @@ def test_invalid_transition_from_terminal_state_raises() -> None:
     order = _order(status=OrderStatus.PAYMENT_FAILED)
 
     with pytest.raises(InvalidTransitionError):
-        order.apply(
-            PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="trace-1")
-        )
+        order.apply(PaymentApproved(order_id=order.id, payment_id=uuid4(), trace_id="trace-1"))
 
 
 def test_apply_event_for_different_order_raises() -> None:
@@ -112,6 +106,4 @@ def test_apply_non_state_event_raises() -> None:
     order = _order()
 
     with pytest.raises(InvalidTransitionError):
-        order.apply(
-            OrderCreated(order_id=order.id, customer_id=123, trace_id="trace-1")
-        )
+        order.apply(OrderCreated(order_id=order.id, customer_id=123, trace_id="trace-1"))
