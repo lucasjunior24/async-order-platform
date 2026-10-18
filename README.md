@@ -481,6 +481,7 @@ Consulte [`como-desenvolver-com-tdd-e-tasks.md`](como-desenvolver-com-tdd-e-task
 | Documento | Propósito |
 |-----------|-----------|
 | [`architecture.md`](arquitetura-do-sistema.md) | Arquitetura técnica completa: stack, tipagem, lint, regras de teste |
+| [`api.md`](api.md) | Documentação das rotas HTTP, contratos e exemplos de uso da API |
 
 
 ## Licença
